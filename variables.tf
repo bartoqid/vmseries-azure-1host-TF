@@ -10,10 +10,10 @@ variable "location" {
 
 variable "admin_username" {
   description = "firewall admin"
-  default = "*******"
+  default = "******"
 }
 
 variable "admin_password" {
   description = "firewall password"
-  default = "*****"
+  default = "***********"
 }

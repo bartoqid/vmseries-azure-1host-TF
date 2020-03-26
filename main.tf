@@ -6,7 +6,7 @@ locals {
 
 #Create a Resource Group for the new Virtual Machine
 resource "azurerm_resource_group" "main" {
-  name     = "${var.prefix}-ResourceGroup"
+  name     = "${var.prefix}-Test1"
   location = "${var.location}"
 }
 
@@ -25,6 +25,7 @@ resource "azurerm_subnet" "Untrust" {
   resource_group_name  = "${azurerm_resource_group.main.name}"
   address_prefix       = "10.5.1.0/24"
 }
+
 
 #Create the second Subnet within the Virtual Network
 resource "azurerm_subnet" "Trust" {
@@ -123,6 +124,7 @@ resource "azurerm_public_ip" "PublicIP_0" {
   public_ip_address_allocation = "Dynamic"
 }
 
+
 resource "azurerm_public_ip" "PublicIP_1" {
   name = "fwpublicIP1"
   location = "${var.location}"
@@ -135,8 +137,8 @@ resource "azurerm_network_interface" "VNIC0" {
   name                = "vmarivaieth0"
   location            = "${var.location}"
   resource_group_name = "${azurerm_resource_group.main.name}"
-  depends_on          = ["azurerm_virtual_network.main",
-                          "azurerm_public_ip.PublicIP_0"]
+  network_security_group_id = "${azurerm_network_security_group.main.id}"
+  depends_on          = ["azurerm_virtual_network.main", "azurerm_public_ip.PublicIP_0"]
 
   ip_configuration {
     name                          = "ipmgmt"
@@ -145,12 +147,13 @@ resource "azurerm_network_interface" "VNIC0" {
     public_ip_address_id = "${azurerm_public_ip.PublicIP_0.id}"
   }
 }
+
 resource "azurerm_network_interface" "VNIC1" {
   name                = "vmarivaieth1"
   location            = "${var.location}"
   resource_group_name = "${azurerm_resource_group.main.name}"
-    depends_on          = ["azurerm_virtual_network.main",
-                          "azurerm_public_ip.PublicIP_1"]
+  network_security_group_id = "${azurerm_network_security_group.main.id}"
+    depends_on          = ["azurerm_virtual_network.main", "azurerm_public_ip.PublicIP_1"]
 
   enable_ip_forwarding = true
   ip_configuration {
@@ -160,10 +163,12 @@ resource "azurerm_network_interface" "VNIC1" {
     public_ip_address_id = "${azurerm_public_ip.PublicIP_1.id}"
   }
 }
+
 resource "azurerm_network_interface" "VNIC2" {
   name                = "vmarivaieth2"
   location            = "${var.location}"
   resource_group_name = "${azurerm_resource_group.main.name}"
+  network_security_group_id = "${azurerm_network_security_group.main.id}"
   depends_on          = ["azurerm_virtual_network.main"]
 
   enable_ip_forwarding = true
@@ -174,15 +179,17 @@ resource "azurerm_network_interface" "VNIC2" {
   }
 }
 
+
 #create storage for vm-series
-resource "azurerm_storage_account" "storagepan" {
-  name = "${var.prefix}storageaccount"
+resource "azurerm_storage_account" "storagepan4" {
+  name = "${var.prefix}storageaccount4"
   resource_group_name = "${azurerm_resource_group.main.name}"
   location = "${var.location}"
   account_tier = "Standard_LRS"
   account_replication_type = "LRS"
   account_tier = "Standard" 
 }
+
 #create vm-series
 resource "azurerm_virtual_machine" "main" {
   name                         = "${var.prefix}-vm"
@@ -214,7 +221,7 @@ resource "azurerm_virtual_machine" "main" {
 
   storage_os_disk {
     name              = "${local.virtual_machine_name}-osdisk"
-    vhd_uri           = "${azurerm_storage_account.storagepan.primary_blob_endpoint}vhds/${var.prefix}-vmseries1-bundle2.vhd"
+    vhd_uri           = "${azurerm_storage_account.storagepan4.primary_blob_endpoint}vhds/${var.prefix}-vmseries1-bundle2.vhd"
     caching           = "ReadWrite"
     create_option     = "FromImage"
   }
@@ -230,6 +237,7 @@ resource "azurerm_virtual_machine" "main" {
   }
 
 }
+
 
 #create network interface for host
 resource "azurerm_network_interface" "host-nic" {
